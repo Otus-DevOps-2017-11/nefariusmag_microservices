@@ -7,7 +7,12 @@ Homework 16
 Осваиваем Dockerfile
 
 Образ собирается командой
-`docker build -t neafriusmag/post:1.0 ./post-py`
+```
+docker build -t nefariusmag/comment:1.0 ./comment
+docker build -t nefariusmag/post:1.0 ./post-py
+docker build -t nefariusmag/ui:1.0 ./ui
+```
+
 Если Dockerfile выглядит не стандартно, то его надо указать явно
 `docker build -t nefariusmag/ui:1.0 -f ./ui/Dockerfile ./ui`
 
@@ -27,7 +32,7 @@ docker run -d --network=reddit -p 9292:9292 nefariusmag/ui:1.0
 `--network-alias=post_db`
 
 Для хранения информации за пределами контейнера, например для БД используем volume, создадим его:
-` docker volume create reddit_db`
+`docker volume create reddit_db`
 
 И укажем при запуске контейнера:
 `docker run -d --network=reddit —network-alias=post_db --network-alias=comment_db -v reddit_db:/data/db mongo:latest`
