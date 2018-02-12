@@ -1,3 +1,3 @@
 
-
+*.retry
 reddit-microservices/\.env
