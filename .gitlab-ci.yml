@@ -17,8 +17,8 @@ test_integration_job:
   stage: test
   script:
     - echo 'Testing 2'
-    
+
 deploy_job:
   stage: deploy
   script:
-    - echo 'Deploy
+    - echo 'Deploy'
