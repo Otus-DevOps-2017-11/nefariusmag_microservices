@@ -1,7 +1,4 @@
-image: ruby:2.4.2
-
-services:
-  - docker:dind
+image: docker:latest
 
 stages:
   - build
@@ -11,8 +8,12 @@ stages:
   - production
 
 variables:
+  DOCKER_DRIVER: overlay2
   DATABASE_URL: 'mongodb://mongo/user_posts'
   # MOUNT_POINT: /builds/$CI_PROJECT_PATH/mnt
+
+services:
+  - docker:dind
 
 before_script:
   - docker info
