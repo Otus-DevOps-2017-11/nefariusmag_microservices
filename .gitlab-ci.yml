@@ -17,13 +17,11 @@ services:
 
 before_script:
   - docker info
-  - cd reddit
-  - bundle install
 
 build_job:
   stage: build
   script:
-    - echo 'Building'
+    - docker build -t nefariusmag/reddit:1.0 docker-monolith
     # - cp mongod.conf /etc/mongod.conf
     # - cp start.sh /etc/mongod.conf
 
