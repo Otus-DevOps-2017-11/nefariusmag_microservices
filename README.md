@@ -1,6 +1,101 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 19
+---
+
+Работа с GitLab CI
+
+Для создания виртуалки использвал:
+
+```
+docker-machine create --driver google \
+--google-project docker-193608 \
+--google-zone europe-west4-b \
+--google-machine-type n1-standard-1 \
+--google-disk-size 70 \
+--google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) \
+docker-host
+```
+
+Доустановил docker-compose и добавил возможность подключения по http, https и ssh
+
+Развернул с помощью docker-compose GitLab CI
+```
+web:
+  image: 'gitlab/gitlab-ce:latest'
+  restart: always
+  hostname: 'gitlab.example.com'
+  environment:
+    GITLAB_OMNIBUS_CONFIG: |
+      external_url 'http://35.204.192.31'
+  ports:
+    - '80:80'
+    - '443:443'
+    - '2222:22'
+  volumes:
+    - '/srv/gitlab/config:/etc/gitlab'
+    - '/srv/gitlab/logs:/var/log/gitlab'
+    - '/srv/gitlab/data:/var/opt/gitlab'
+```
+
+Настроив базового пользователя, группу и проект залил туда репозиторий и добавил файл для pipeline, .gitlab-ci.yml:
+```
+image: ruby:2.4.2
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DATABASE_URL: 'mongodb://mongo/user_posts'
+
+before_script:
+  - cd reddit
+  - bundle install
+
+build_job:
+  stage: build
+  script:
+    - echo 'Building'
+
+test_unit_job:
+  stage: test
+  services:
+    - mongo:latest
+  script:
+    - ruby simpletest.rb
+
+test_integration_job:
+  stage: test
+  script:
+    - echo 'Testing 2'
+
+deploy_job:
+  stage: deploy
+  script:
+    - echo 'Deploy'
+```
+Для запуска runner поднял еще контейнер:
+```
+docker run -d --name gitlab-runner --restart always \
+-v /srv/gitlab-runner/config:/etc/gitlab-runner \
+-v /var/run/docker.sock:/var/run/docker.sock \
+gitlab/gitlab-runner:latest
+```
+Подключившись к которому зарегистирровал его в GitLab
+`docker exec -it gitlab-runner gitlab-runner register`
+
+Задание со *
+
+Настроил интеграцию с Slack, чат #dmitriy-erokhin
+
+Для развертывания новых runner создал плейбук, запускается командой:
+`ansible-playbook new_runner.yml -i inventory -e "host=35.204.192.31 number_runner=1"`
+В которой указываем ip и номер runner который хотим развернуть.
+
+---
 Homework 17
 ---
 

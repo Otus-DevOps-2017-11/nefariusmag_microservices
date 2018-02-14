@@ -1,0 +1,24 @@
+---
+- hosts: "{{host}}"
+  become: true
+  vars:
+    number_runner: 1
+    gitlab_url: http://35.204.192.31/
+    gitlab_token: 9yVnBsu62qG1mq4VbqsB
+  tasks:
+
+    - name: start gitlab-runner
+      shell: docker run -d --name gitlab-runner-{{number_runner}} --restart always \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            gitlab/gitlab-runner:latest
+
+    - name: register gitlab-runner
+      shell: docker exec -i gitlab-runner-{{number_runner}} gitlab-runner register -n \
+        --url {{gitlab_url}} \
+        --name "my-runner-{{number_runner}}" \
+        --registration-token {{gitlab_token}} \
+        --executor docker \
+        --tag-list docker,linux,ubuntu,xenial \
+        --docker-image alpine:latest \
+        --run-untagged true \
+        --locked false
