@@ -38,6 +38,7 @@ deploy_dev_job:
   environment:
     name: dev
     url: http://dev.example.com
+    on_stop: stop
 
 branch review:
   stage: review
@@ -45,10 +46,19 @@ branch review:
   environment:
     name: branch/$CI_COMMIT_REF_NAME
     url: http://$CI_ENVIRONMENT_SLUG.example.com
+    on_stop: stop
   only:
     - branches
   except:
     - master
+
+stop:
+  stage: review
+  script: echo "Stop to $CI_ENVIRONMENT_SLUG"
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
 
 staging:
   stage: stage
