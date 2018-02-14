@@ -17,7 +17,9 @@ before_script:
 build_job:
   stage: build
   script:
-    - echo 'Building'
+    - cd reddit && \
+      docker build -t reddit:latest .
+    # - echo 'Building'
 
 test_unit_job:
   stage: test
