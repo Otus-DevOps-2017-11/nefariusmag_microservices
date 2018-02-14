@@ -57,25 +57,25 @@ stop:
     action: stop
   when: manual
 
-branch review:
-  stage: review
-  script: echo "Deploy to $CI_ENVIRONMENT_SLUG"
-  environment:
-    name: branch/$CI_COMMIT_REF_NAME
-    url: http://$CI_ENVIRONMENT_SLUG.example.com
-    on_stop: stop_branch
-  only:
-    - branches
-  except:
-    - master
-
-stop_branch:
-  stage: review
-  script: echo "Stop to $CI_ENVIRONMENT_SLUG"
-  environment:
-    name: branch/$CI_COMMIT_REF_NAME
-    action: stop
-  when: manual
+# branch review:
+#   stage: review
+#   script: echo "Deploy to $CI_ENVIRONMENT_SLUG"
+#   environment:
+#     name: branch/$CI_COMMIT_REF_NAME
+#     url: http://$CI_ENVIRONMENT_SLUG.example.com
+#     on_stop: stop_branch
+#   only:
+#     - branches
+#   except:
+#     - master
+#
+# stop_branch:
+#   stage: review
+#   script: echo "Stop to $CI_ENVIRONMENT_SLUG"
+#   environment:
+#     name: branch/$CI_COMMIT_REF_NAME
+#     action: stop
+#   when: manual
 
 staging:
   stage: stage

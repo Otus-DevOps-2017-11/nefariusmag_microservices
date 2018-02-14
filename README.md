@@ -1,4 +1,23 @@
 Dmitriy Erokhin - nefariusmag
+---
+Homework 20
+---
+
+
+Переконфигурировать runner
+
+docker run -d --name gitlab-runner-2 --restart always \
+-v /var/run/docker.sock:/var/run/docker.sock -p 9292:9292 \
+gitlab/gitlab-runner:latest
+
+docker exec -it gitlab-runner-2 gitlab-runner register -n \
+--url http://35.204.192.31/ \
+--registration-token pdtkb2JKLshbg3yskyJL \
+--executor docker \                          
+--description "my-runner-2" \
+--docker-image "docker:latest" \
+--docker-privileged
+
 
 ---
 Homework 19
