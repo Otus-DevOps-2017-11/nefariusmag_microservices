@@ -48,7 +48,7 @@ branch review:
   only:
     - branches
   except:
-    - master 
+    - master
 
 staging:
   stage: stage
@@ -60,6 +60,8 @@ staging:
   environment:
     name: stage
     url: https://beta.example.com
+    # on_stop: stop
+    action: stop
 
 production:
   stage: production
@@ -71,3 +73,14 @@ production:
   environment:
     name: production
     url: https://example.com
+    action: stop
+    # on_stop: stop
+
+# stop:
+#   stage: deploy
+#   script: echo "Stop to $CI_ENVIRONMENT_SLUG"
+#   environment:
+#     name: $CI_ENVIRONMENT_SLUG
+#     action: stop
+#   when: manual
+#
