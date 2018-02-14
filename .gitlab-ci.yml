@@ -26,13 +26,13 @@ build_job:
     # - cp start.sh /etc/mongod.conf
 
 
-test_unit_job:
-  stage: test
-  # services:
-  #   - mongo:latest
-  script:
-    - cd reddit
-    - ruby simpletest.rb
+# test_unit_job:
+#   stage: test
+#   services:
+#     - mongo:latest
+#   script:
+#     - cd reddit
+#     - ruby simpletest.rb
 
 # test_integration_job:
 #   stage: test
