@@ -6,17 +6,40 @@ Homework 20
 
 Переконфигурировать runner
 
-docker run -d --name gitlab-runner-2 --restart always \
--v /var/run/docker.sock:/var/run/docker.sock -p 9292:9292 \
+docker run -d --name gitlab-runner-1 --restart always \
+-v /var/run/docker.sock:/var/run/docker.sock \
 gitlab/gitlab-runner:latest
 
-docker exec -it gitlab-runner-2 gitlab-runner register -n \
+docker exec -it gitlab-runner-1 gitlab-runner register -n \
 --url http://35.204.192.31/ \
 --registration-token pdtkb2JKLshbg3yskyJL \
 --executor docker \                          
---description "my-runner-2" \
+--description "my-runner-1" \
 --docker-image "docker:latest" \
 --docker-privileged
+
+
+<!-- docker exec -it gitlab-runner-2 gitlab-runner register -n \
+    --url http://35.204.192.31/ \
+    --registration-token pdtkb2JKLshbg3yskyJL \
+    --executor docker \
+    --description "my-runner-2" \
+    --builds-dir "/srv/my_build_directory" \
+    --docker-image "docker:latest" \
+    --docker-privileged \
+    --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
+    --docker-volumes /srv/my_build_directory:/srv/my_build_directory \
+    --docker-pull-policy "if-not-present" -->
+
+docker run -d --name gitlab-runner-2 --restart always \
+-v /var/run/docker.sock:/var/run/docker.sock \
+gitlab/gitlab-runner:latest
+
+docker exec -it gitlab-runner-2 gitlab-runner register -n \
+    --url http://35.204.192.31/ \
+    --registration-token pdtkb2JKLshbg3yskyJL \
+    --executor shell \
+    --description "my-runner-2"
 
 
 ---
