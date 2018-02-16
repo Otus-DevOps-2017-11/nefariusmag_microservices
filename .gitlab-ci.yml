@@ -53,9 +53,7 @@ stop:
   stage: review
   when: manual
   script:
-    - if docker ps | grep reddit-dev; then
-          docker rm -f reddit-dev
-      fi;
+    - if [ -n "$(docker ps | grep reddit-dev)" ]; then docker rm -f reddit-dev; fi
   environment:
     name: dev
     action: stop
@@ -87,9 +85,7 @@ staging:
     - /^\d+\.\d+.\d+/
   script:
     - docker pull nefariusmag/reddit:1.0
-    - if docker ps | grep reddit-stage; then
-          docker rm -f reddit-stage
-      fi;
+    - if [ -n "$(docker ps | grep reddit-stage)" ]; then docker rm -f reddit-stage; fi
     - docker run --name reddit-stage -d -p 9293:9292 nefariusmag/reddit:1.0
   environment:
     name: stage
@@ -102,9 +98,7 @@ stop_stage:
   only:
     - /^\d+\.\d+.\d+/
   script:
-    - if docker ps | grep reddit-stage; then
-          docker rm -f reddit-stage
-      fi;
+    - if [ -n "$(docker ps | grep reddit-stage)" ]; then docker rm -f reddit-stage; fi
   environment:
     name: stage
     action: stop
@@ -116,9 +110,7 @@ production:
     - /^\d+\.\d+.\d+/
   script:
     - docker pull nefariusmag/reddit:1.0
-    - if docker ps | grep reddit; then
-          docker rm -f reddit
-      fi;
+    - if [ -n "$(docker ps | grep reddit)" ]; then docker rm -f reddit; fi
     - docker run --name reddit -d -p 9292:9292 nefariusmag/reddit:1.0
   environment:
     name: production
@@ -131,9 +123,7 @@ stop_prod:
   only:
     - /^\d+\.\d+.\d+/
   script:
-    - if docker ps | grep reddit; then
-          docker rm -f reddit
-      fi;
+    - if [ -n "$(docker ps | grep reddit)" ]; then docker rm -f reddit; fi
   environment:
     name: production
     action: stop
