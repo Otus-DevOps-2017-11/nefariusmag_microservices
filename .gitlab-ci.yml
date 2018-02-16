@@ -45,7 +45,7 @@ deploy_dev_job:
     - docker pull nefariusmag/reddit:1.0
     - docker stop reddit-dev
     - docker rm reddit-dev
-    - docker run --name reddit-dev -d -p 82:9294 nefariusmag/reddit:1.0
+    - docker run --name reddit-dev -d -p 9294:9292 nefariusmag/reddit:1.0
   environment:
     name: dev
     url: http://35.204.192.31:9294
