@@ -7,11 +7,10 @@ stages:
   - stage
   - production
 
-variables:
-  DOCKER_DRIVER: overlay2
-  DATABASE_URL: 'mongodb://mongo/user_posts'
+# variables:
+  # DOCKER_DRIVER: overlay2
+  # DATABASE_URL: 'mongodb://mongo/user_posts'
   # MOUNT_POINT: /builds/$CI_PROJECT_PATH/mnt
-
 
 before_script:
   - docker login -u nefariusmag -p $DOKERHUB_PASS
@@ -43,8 +42,9 @@ deploy_dev_job:
   #   - docker:dind
   script:
     - docker pull nefariusmag/reddit:1.0
-    - docker stop reddit-dev
-    - docker rm reddit-dev
+    - if docker ps | grep reddit-dev; then
+          docker rm -f reddit-dev
+      fi;
     - docker run --name reddit-dev -d -p 9294:9292 nefariusmag/reddit:1.0
   environment:
     name: dev
@@ -55,7 +55,9 @@ stop:
   stage: review
   when: manual
   script:
-    - docker stop reddit-dev
+    - if docker ps | grep reddit-dev; then
+          docker rm -f reddit-dev
+      fi;
   environment:
     name: dev
     action: stop
@@ -87,8 +89,9 @@ staging:
     - /^\d+\.\d+.\d+/
   script:
     - docker pull nefariusmag/reddit:1.0
-    - docker stop reddit-stage
-    - docker rm reddit-stage
+    - if docker ps | grep reddit-stage; then
+          docker rm -f reddit-stage
+      fi;
     - docker run --name reddit-stage -d -p 9293:9292 nefariusmag/reddit:1.0
   environment:
     name: stage
@@ -101,7 +104,9 @@ stop_stage:
   only:
     - /^\d+\.\d+.\d+/
   script:
-    - docker stop reddit-stage
+    - if docker ps | grep reddit-stage; then
+          docker rm -f reddit-stage
+      fi;
   environment:
     name: stage
     action: stop
@@ -113,8 +118,9 @@ production:
     - /^\d+\.\d+.\d+/
   script:
     - docker pull nefariusmag/reddit:1.0
-    - docker stop reddit
-    - docker rm reddit
+    - if docker ps | grep reddit; then
+          docker rm -f reddit
+      fi;
     - docker run --name reddit -d -p 9292:9292 nefariusmag/reddit:1.0
   environment:
     name: production
@@ -127,7 +133,9 @@ stop_prod:
   only:
     - /^\d+\.\d+.\d+/
   script:
-    - docker stop reddit
+    - if docker ps | grep reddit; then
+          docker rm -f reddit
+      fi;
   environment:
     name: production
     action: stop
