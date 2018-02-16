@@ -58,15 +58,19 @@ branch review:
   only:
     - branches
   except:
-    - master
+    - docker-7
 
 stop_branch:
   stage: review
+  when: manual
+  only:
+    - branches
+  except:
+    - docker-7  
   script: echo "Stop to $CI_ENVIRONMENT_SLUG"
   environment:
     name: branch/$CI_COMMIT_REF_NAME
     action: stop
-  when: manual
 
 staging:
   stage: stage
@@ -82,11 +86,13 @@ staging:
 
 stop_stage:
   stage: stage
+  when: manual
+  only:
+   - /^\d+\.\d+.\d+/
   script: echo "Stop to stage"
   environment:
     name: stage
     action: stop
-  when: manual
 
 production:
   stage: production
@@ -102,8 +108,10 @@ production:
 
 stop_prod:
   stage: production
+  when: manual
+  only:
+   - /^\d+\.\d+.\d+/
   script: echo "Stop to production"
   environment:
     name: production
     action: stop
-  when: manual
