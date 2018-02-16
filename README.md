@@ -3,44 +3,77 @@ Dmitriy Erokhin - nefariusmag
 Homework 20
 ---
 
+Более детальная настройка pipeline в GitLab
 
-Переконфигурировать runner
+Для настройки заупуска в ручную используется параметр:
+`when: manual`
 
-docker run -d --name gitlab-runner-1 --restart always \
--v /var/run/docker.sock:/var/run/docker.sock \
-gitlab/gitlab-runner:latest
+Для ограничения запуска только по тегу:
+```
+only:
+ - /^\d+\.\d+.\d+/
+```
 
-docker exec -it gitlab-runner-1 gitlab-runner register -n \
+Запуск веток, но не мастера:
+```
+only:
+  - branches
+except:
+  - master
+```
+
+Задача с *
+
+Для задания кнопки стоп, использвал конструкцию:
+```
+deploy_dev_job:
+  stage: review
+  script:
+    - echo 'Deploy'
+  environment:
+    name: dev
+    url: http://dev.example.com
+    on_stop: stop
+
+stop:
+  stage: review
+  script: echo "Stop to dev"
+  environment:
+    name: dev
+    action: stop
+  when: manual
+```
+
+Задача со **
+
+Я видел две возможности как выполнить это задания:
+
+1 конструкция - в gitlab runner создать раннер на основе docker, чтобы он запускал docker контейнеры.
+Но тут я столкнулся с проблемой, что не могу достучаться до приложения из вне, как бы не указывал порты для пробрасывания.
+```
+docker exec -it gitlab-runner gitlab-runner register -n \
 --url http://35.204.192.31/ \
 --registration-token pdtkb2JKLshbg3yskyJL \
 --executor docker \                          
 --description "my-runner-1" \
 --docker-image "docker:latest" \
 --docker-privileged
+```
 
+2 конструкция - создать новый раннер на основе shell, в который установить docker и в итоге несмотря на определенную корявость это работает!!
 
-<!-- docker exec -it gitlab-runner-2 gitlab-runner register -n \
-    --url http://35.204.192.31/ \
-    --registration-token pdtkb2JKLshbg3yskyJL \
-    --executor docker \
-    --description "my-runner-2" \
-    --builds-dir "/srv/my_build_directory" \
-    --docker-image "docker:latest" \
-    --docker-privileged \
-    --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
-    --docker-volumes /srv/my_build_directory:/srv/my_build_directory \
-    --docker-pull-policy "if-not-present" -->
-
-docker run -d --name gitlab-runner-2 --restart always \
--v /var/run/docker.sock:/var/run/docker.sock \
-gitlab/gitlab-runner:latest
-
-docker exec -it gitlab-runner-2 gitlab-runner register -n \
+Зарегистрировать новый runner:
+```
+docker exec -it gitlab-runner gitlab-runner register -n \
     --url http://35.204.192.31/ \
     --registration-token pdtkb2JKLshbg3yskyJL \
     --executor shell \
     --description "my-runner-2"
+```
 
+Для сборки образа и деплоя контейнера создал код который положил в .gitlab-ci.yml.reddit
+
+Собирает приложение, деплоит на дев, стейдж, прод, с возможностью остановки.
 
 ---
 Homework 19
