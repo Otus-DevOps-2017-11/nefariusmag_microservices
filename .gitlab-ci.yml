@@ -45,10 +45,10 @@ deploy_dev_job:
     - docker pull nefariusmag/reddit:1.0
     - docker stop reddit-dev
     - docker rm reddit-dev
-    - docker run --name reddit-dev -d -p 82:9292 --network=host nefariusmag/reddit:1.0
+    - docker run --name reddit-dev -d -p 82:9294 nefariusmag/reddit:1.0
   environment:
     name: dev
-    url: http://35.204.192.31:82
+    url: http://35.204.192.31:9294
     on_stop: stop
 
 stop:
@@ -89,10 +89,10 @@ staging:
     - docker pull nefariusmag/reddit:1.0
     - docker stop reddit-stage
     - docker rm reddit-stage
-    - docker run --name reddit-stage -d -p 81:9292 --network=host nefariusmag/reddit:1.0
+    - docker run --name reddit-stage -d -p 9293:9292 nefariusmag/reddit:1.0
   environment:
     name: stage
-    url: http://35.204.192.31:81
+    url: http://35.204.192.31:9293
     on_stop: stop_stage
 
 stop_stage:
@@ -115,10 +115,10 @@ production:
     - docker pull nefariusmag/reddit:1.0
     - docker stop reddit
     - docker rm reddit
-    - docker run --name reddit-dev -d -p 80:9292 --network=host nefariusmag/reddit:1.0
+    - docker run --name reddit -d -p 9292:9292 nefariusmag/reddit:1.0
   environment:
     name: production
-    url: https://example.com
+    url: http://35.204.192.31:9292
     on_stop: stop_prod
 
 stop_prod:
