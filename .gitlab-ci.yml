@@ -42,7 +42,7 @@ deploy_dev_job:
   #   - docker:dind
   script:
     - docker pull nefariusmag/reddit:1.0
-    - if docker ps | grep reddit-dev; then
+    - if [ -n $(docker ps | grep reddit-dev) ]; then
           docker rm -f reddit-dev
       fi;
     - docker run --name reddit-dev -d -p 9294:9292 nefariusmag/reddit:1.0
