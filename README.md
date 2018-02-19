@@ -1,6 +1,56 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 21
+---
+
+Развертывание Prometheus
+
+
+Настройка prometheus через yml, prometheus.yml:
+```
+---
+global:
+  scrape_interval: '5s'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+        - 'localhost:9090'
+
+  - job_name: 'ui'
+    static_configs:
+      - targets:
+        - 'ui:9292'
+
+  - job_name: 'comment'
+    static_configs:
+      - targets:
+        - 'comment:9292'
+
+  - job_name: 'node'
+    static_configs:
+      - targets:
+        - 'node-exporter:9100'
+
+```
+
+Настройка частоты проверки:
+`scrape_interval: '5s'`
+
+Инстансы для проверки:
+```
+- job_name: 'ui'
+  static_configs:
+    - targets:
+      - 'ui:9292'
+```
+
+
+DockerHub: https://hub.docker.com/r/nefariusmag/
+
+---
 Homework 20
 ---
 
