@@ -1,9 +1,9 @@
 version: '3.3'
 services:
+
   post_db:
     env_file: .env
     image: mongo:${VERSION_DB}
-    # container_name: post_db
     volumes:
       - post_db:/data/db
     ports:
@@ -13,35 +13,36 @@ services:
         aliases:
           - post_db
           - comment_db
+
   ui:
     env_file: .env
     image: ${USER_NAME}/ui:${VERSION_APP}
-    # container_name: ui
     ports:
       - ${PORT_UI}:9292/tcp
     networks:
       - front_net
+
   post:
     env_file: .env
     image: ${USER_NAME}/post:${VERSION_APP}
-    # container_name: post
     networks:
       back_net:
       front_net:
         aliases:
           - post
+
   comment:
     env_file: .env
     image: ${USER_NAME}/comment:${VERSION_APP}
-    # container_name: comment
     networks:
       back_net:
       front_net:
         aliases:
           - comment
+
   prometheus:
     env_file: .env
-    image: ${USER_NAME}/prometheus
+    image: ${USER_NAME}/prometheus:latest
     ports:
       - '9090:9090'
     networks:
@@ -49,7 +50,7 @@ services:
       - front_net
 
   node-exporter:
-    image: prom/node-exporter
+    image: prom/node-exporter:latest
     user: root
     volumes:
       - /proc:/host/proc:ro
@@ -63,9 +64,8 @@ services:
       - back_net
       - front_net
 
-  post_db-exporter:
+  mongodb-exporter:
     image: ${USER_NAME}/mongodb_exporter:latest
-    # image: eses/mongodb_exporter
     environment:
       MONGODB_URL: 'mongodb://post_db:27017'
     ports:
@@ -73,6 +73,14 @@ services:
     networks:
       - back_net
       - front_net
+
+  blackbox-exporter:
+    image: ${USER_NAME}/blackbox_exporter:latest
+    ports:
+      - 9115:9115
+    networks:
+      - front_net
+      - back_net
 
 volumes:
   post_db:

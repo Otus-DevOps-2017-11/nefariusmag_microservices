@@ -5,3 +5,5 @@ reddit-microservices/\.env
 docker/\.env
 
 monitoring/mongodb_exporter/mongodb_exporter
+
+monitoring/blackbox_exporter/blackbox_exporter

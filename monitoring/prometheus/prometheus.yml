@@ -23,7 +23,24 @@ scrape_configs:
       - targets:
         - 'node-exporter:9100'
 
-  - job_name: 'post_db'
+  - job_name: 'mongodb'
     static_configs:
       - targets:
-        - 'post_db-exporter:9001'
+        - 'mongodb-exporter:9001'
+
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://comment:9292/healthcheck
+        - http://ui:9292/healthcheck
+        - http://post:5000/healthcheck
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
