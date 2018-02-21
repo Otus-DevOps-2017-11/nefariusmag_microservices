@@ -3,3 +3,5 @@
 reddit-microservices/\.env
 
 docker/\.env
+
+monitoring/mongodb_exporter/mongodb_exporter

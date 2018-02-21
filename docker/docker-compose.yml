@@ -3,9 +3,11 @@ services:
   post_db:
     env_file: .env
     image: mongo:${VERSION_DB}
-    container_name: post_db
+    # container_name: post_db
     volumes:
       - post_db:/data/db
+    ports:
+      - 27017:27017
     networks:
       back_net:
         aliases:
@@ -14,7 +16,7 @@ services:
   ui:
     env_file: .env
     image: ${USER_NAME}/ui:${VERSION_APP}
-    container_name: ui
+    # container_name: ui
     ports:
       - ${PORT_UI}:9292/tcp
     networks:
@@ -22,7 +24,7 @@ services:
   post:
     env_file: .env
     image: ${USER_NAME}/post:${VERSION_APP}
-    container_name: post
+    # container_name: post
     networks:
       back_net:
       front_net:
@@ -31,7 +33,7 @@ services:
   comment:
     env_file: .env
     image: ${USER_NAME}/comment:${VERSION_APP}
-    container_name: comment
+    # container_name: comment
     networks:
       back_net:
       front_net:
@@ -60,7 +62,18 @@ services:
     networks:
       - back_net
       - front_net
-      
+
+  post_db-exporter:
+    image: ${USER_NAME}/mongodb_exporter:latest
+    # image: eses/mongodb_exporter
+    environment:
+      MONGODB_URL: 'mongodb://post_db:27017'
+    ports:
+      - 9001:9001
+    networks:
+      - back_net
+      - front_net
+
 volumes:
   post_db:
 
