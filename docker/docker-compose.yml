@@ -42,7 +42,7 @@ services:
 
   prometheus:
     env_file: .env
-    image: ${USER_NAME}/prometheus:latest
+    image: ${USER_NAME}/prometheus:${VERSION_APP}
     ports:
       - '9090:9090'
     networks:
@@ -50,7 +50,7 @@ services:
       - front_net
 
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:${VERSION_APP}
     user: root
     volumes:
       - /proc:/host/proc:ro
@@ -65,7 +65,7 @@ services:
       - front_net
 
   mongodb-exporter:
-    image: ${USER_NAME}/mongodb_exporter:latest
+    image: ${USER_NAME}/mongodb_exporter:${VERSION_APP}
     environment:
       MONGODB_URL: 'mongodb://post_db:27017'
     ports:
@@ -75,7 +75,7 @@ services:
       - front_net
 
   blackbox-exporter:
-    image: ${USER_NAME}/blackbox_exporter:latest
+    image: ${USER_NAME}/blackbox_exporter:${VERSION_APP}
     ports:
       - 9115:9115
     networks:
