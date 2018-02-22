@@ -3,7 +3,9 @@ image: ruby:2.4.2
 stages:
   - build
   - test
-  - deploy
+  - review
+  - stage
+  - production
 
 variables:
   DATABASE_URL: 'mongodb://mongo/user_posts'
@@ -22,14 +24,94 @@ test_unit_job:
   services:
     - mongo:latest
   script:
-    - ruby simpletest.rb 
+    - ruby simpletest.rb
 
 test_integration_job:
   stage: test
   script:
     - echo 'Testing 2'
 
-deploy_job:
-  stage: deploy
+deploy_dev_job:
+  stage: review
   script:
     - echo 'Deploy'
+  environment:
+    name: dev
+    url: http://dev.example.com
+    on_stop: stop
+
+stop:
+  stage: review
+  script: echo "Stop to dev"
+  environment:
+    name: dev
+    action: stop
+  when: manual
+
+branch review:
+  stage: review
+  script: echo "Deploy to $CI_ENVIRONMENT_SLUG"
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG.example.com
+    on_stop: stop_branch
+  only:
+    - branches
+  except:
+    - docker-7
+
+stop_branch:
+  stage: review
+  when: manual
+  only:
+    - branches
+  except:
+    - docker-7  
+  script: echo "Stop to $CI_ENVIRONMENT_SLUG"
+  environment:
+    name: branch/$CI_COMMIT_REF_NAME
+    action: stop
+
+staging:
+  stage: stage
+  when: manual
+  only:
+   - /^\d+\.\d+.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: stage
+    url: https://beta.example.com
+    on_stop: stop_stage
+
+stop_stage:
+  stage: stage
+  when: manual
+  only:
+   - /^\d+\.\d+.\d+/
+  script: echo "Stop to stage"
+  environment:
+    name: stage
+    action: stop
+
+production:
+  stage: production
+  when: manual
+  only:
+   - /^\d+\.\d+.\d+/
+  script:
+    - echo 'Deploy'
+  environment:
+    name: production
+    url: https://example.com
+    on_stop: stop_prod
+
+stop_prod:
+  stage: production
+  when: manual
+  only:
+   - /^\d+\.\d+.\d+/
+  script: echo "Stop to production"
+  environment:
+    name: production
+    action: stop
