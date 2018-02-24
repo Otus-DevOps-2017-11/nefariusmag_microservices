@@ -1,6 +1,93 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 21
+---
+
+Развертывание Prometheus
+
+
+Настройка prometheus через yml, prometheus.yml подкладывается в /etc/prometheus/
+
+Настройка частоты проверки:
+```
+global:
+  scrape_interval: '5s'
+```
+
+Инстансы для проверки:
+```
+- job_name: 'ui'
+  static_configs:
+    - targets:
+      - 'ui:9292'
+```
+
+DockerHub: https://hub.docker.com/r/nefariusmag/
+
+Задание со * 1
+
+Для мониторинга БД использовал экспортер mongodb_exporter, бинарник взял с репозитория, сам не собирал. Бинарник по умолчанию мониторит localhost, надо передаеть ему url бд: MONGODB_URL= 'mongodb://post_db:27017'
+
+В настройки prometheus добавил:
+```
+- job_name: 'mongodb'
+  static_configs:
+    - targets:
+      - 'mongodb-exporter:9001'
+```
+В docker-compose.yml добавил:
+```
+mongodb-exporter:
+  image: ${USER_NAME}/mongodb_exporter:${VERSION_APP}
+  environment:
+    MONGODB_URL: 'mongodb://post_db:27017'
+  ports:
+    - 9001:9001
+  networks:
+    - back_net
+    - front_net
+```
+
+Задание со * 2
+
+Для мониторинга сервисов по http использвал blackbox_exporter, бинарник взял с репозитория.
+
+В настройки prometheus добавил:
+```
+- job_name: 'blackbox'
+  metrics_path: /probe
+  params:
+    module: [http_2xx]
+  static_configs:
+    - targets:
+      - http://comment:9292/healthcheck
+      - http://ui:9292/healthcheck
+      - http://post:5000/healthcheck
+  relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      replacement: blackbox-exporter:9115
+```
+В docker-compose.yml добавил:
+```
+blackbox-exporter:
+  image: ${USER_NAME}/blackbox_exporter:${VERSION_APP}
+  ports:
+    - 9115:9115
+  networks:
+    - front_net
+    - back_net
+```
+
+Задание со * 3
+
+Создал Makefile, для сборок всех приложений, отправки на докерхаб и рестарта докер контейнеров.
+
+---
 Homework 20
 ---
 
