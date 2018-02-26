@@ -1,6 +1,95 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 23
+---
+
+Работа с Grafana
+
+Подняли мониторинг контейнеров - cAdvisor и Grafana для визуализации данных в графики. Настроили систему оповещений.
+
+В docker-compose-monitoring.yml добавили:
+```
+cadvisor:
+  image: google/cadvisor:v0.29.0
+  volumes:
+    - '/:/rootfs:ro'
+    - '/var/run:/var/run:rw'
+    - '/sys:/sys:ro'
+    - '/var/lib/docker/:/var/lib/docker:ro'
+  ports:
+    - '8080:8080'
+
+grafana:
+  image: grafana/grafana:5.0.0-beta4
+  volumes:
+    - grafana_data:/var/lib/grafana
+  environment:
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=secret
+  depends_on:
+    - prometheus
+  ports:
+    - 3000:3000
+
+volumes:
+  grafana_data:    
+```
+
+Хранилище dashboard для Grafana - https://grafana.com/dashboards
+
+
+
+Для отображеиня в grafana мониторинга только определенных старниц 400 или 500 указываем функцию:
+`rate(ui_request_count{http_status=~"^[45].*"}[1m])`
+
+Для гистограммы:
+`histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[5m])) by (le))`
+
+Алертинг для prometheus можно настроить приложение altermanager:
+
+```
+alertmanager:
+  image: ${USER_NAME}/alertmanager
+  command:
+    - '--config.file=/etc/alertmanager/config.yml'
+  ports:
+    - 9093:9093
+  networks:
+    - back_net
+    - front_net
+```
+Настриаем конфиг самого приложения config.yml:
+```
+global:
+  slack_api_url: 'https://hooks.slack.com/services/T6HR0TUP3/B99QPJHLN/ххххххххх'
+
+route:
+  receiver: 'slack-notifications'
+
+receivers:
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: '#dmitriy-erokhin'
+```
+
+Встаиваем его в prometheus.yml
+```
+rule_files:
+  - "alerts.yml"
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "alertmanager:9093"
+```
+
+
+DockerHub: https://hub.docker.com/r/nefariusmag/
+
+---
 Homework 21
 ---
 

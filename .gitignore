@@ -1,9 +1,11 @@
-
 *.retry
 reddit-microservices/\.env
+src/*/build_info.txt
 
 docker/\.env
 
 monitoring/mongodb_exporter/mongodb_exporter
-
 monitoring/blackbox_exporter/blackbox_exporter
+
+create_vm/credentials\.json
+create_vm/secrets\.py
