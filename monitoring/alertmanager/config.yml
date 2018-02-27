@@ -1,10 +1,17 @@
 global:
   slack_api_url: 'https://hooks.slack.com/services/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'
+  smtp_smarthost: 'smtp.yandex.ru:465'
+  smtp_from: 'nefarius-mag@yandex.ru'
+  smtp_auth_username: "nefarius-mag@yandex.ru"
+  smtp_auth_password: "xxx"
+  smtp_require_tls: false
 
 route:
-  receiver: 'slack-notifications'
+  receiver: 'notifications'
 
 receivers:
-- name: 'slack-notifications'
+- name: 'notifications'
   slack_configs:
   - channel: '#dmitriy-erokhin'
+  email_configs:
+  - to: 'i9164871362@gmail.com'

@@ -38,8 +38,6 @@ volumes:
 
 Хранилище dashboard для Grafana - https://grafana.com/dashboards
 
-
-
 Для отображеиня в grafana мониторинга только определенных старниц 400 или 500 указываем функцию:
 `rate(ui_request_count{http_status=~"^[45].*"}[1m])`
 
@@ -86,8 +84,42 @@ alerting:
       - "alertmanager:9093"
 ```
 
-
 DockerHub: https://hub.docker.com/r/nefariusmag/
+
+Задание с *
+
+-- В Makefile добавил новую сборку.
+
+-- Метрики докер контейнера
+
+Настроил докер на запись метрик в /etc/docker/daemon.json
+```{
+  "metrics-addr" : "0.0.0.0:9323",
+  "experimental" : true
+}
+```
+В прометеус добавил, где 172.18.0.1 - ip шлюза подсети:
+```- job_name: 'docker'
+  static_configs:
+    - targets:
+      - '172.18.0.1:9323'   
+```
+
+Для отправки сообщений в настроки alertmanager надо добавить:
+```
+global:
+  smtp_smarthost: 'smtp.yandex.ru:465'
+  smtp_from: 'nefarius-mag@yandex.ru'
+  smtp_auth_username: "nefarius-mag@yandex.ru"
+  smtp_auth_password: "xxx"
+  smtp_require_tls: false
+
+receivers:
+- name: 'notifications'
+  email_configs:
+  - to: 'i9164871362@gmail.com'
+```
+
 
 ---
 Homework 21
