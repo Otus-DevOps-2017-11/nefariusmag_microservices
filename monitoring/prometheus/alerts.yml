@@ -11,11 +11,29 @@ groups:
         description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute'
         summary: 'Instance {{ $labels.instance }} down'
 
-    - alert: PercentileMore95
+    - alert: Percentile95-warning
+      expr: histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[1m])) by (le)) > 0.3
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        description: '{{ $labels.instance }} of job {{ $labels.job }} has high 95 percentile for more than 1 minute'
+        summary: 'Instance {{ $labels.instance }} percentile95 more 0.3'
+
+    - alert: Percentile95-critical
       expr: histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[1m])) by (le)) > 0.5
       for: 1m
       labels:
-        severity: page
+        severity: critical
       annotations:
         description: '{{ $labels.instance }} of job {{ $labels.job }} has high 95 percentile for more than 1 minute'
-        summary: 'Instance {{ $labels.instance }} High95Percentile'
+        summary: 'Instance {{ $labels.instance }} percentile95 more 0.5'
+
+    - alert: NewPost
+      expr: rate(post_count[1h]) > 0,00025
+      for: 1h
+      labels:
+        severity: page
+      annotations:
+        description: 'We have new message(s) in last hour'
+        summary: 'We have new message(s) in last hour'
