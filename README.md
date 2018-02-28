@@ -93,17 +93,22 @@ DockerHub: https://hub.docker.com/r/nefariusmag/
 -- Метрики докер контейнера
 
 Настроил докер на запись метрик в /etc/docker/daemon.json
-```{
+```
+{
   "metrics-addr" : "0.0.0.0:9323",
   "experimental" : true
 }
 ```
-В прометеус добавил, где 172.18.0.1 - ip шлюза подсети:
-```- job_name: 'docker'
+В прометеус добавил, где 172.18.0.1 и 172.19.0.1 - ip шлюза подсети:
+```
+- job_name: 'docker'
   static_configs:
     - targets:
-      - '172.18.0.1:9323'   
+    - '172.18.0.1:9323'   
+    - '172.19.0.1:9323'   
 ```
+
+-- Email
 
 Для отправки сообщений в настроки alertmanager надо добавить:
 ```
@@ -119,6 +124,47 @@ receivers:
   email_configs:
   - to: 'i9164871362@gmail.com'
 ```
+
+-- Новые метрики - загрузка CPU, RAM и HDD
+
+```
+- alert: CPUisload
+  expr: node_load1 > 0.5
+  for: 1m
+  labels:
+    severity: warning
+  annotations:
+    description: "{{$labels.instance}} have cpu load > 0.5"
+
+- alert: HDDisLow
+  expr: node_filesystem_avail{mountpoint="/"} < 400000000
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    description: "{{$labels.instance}} have HDD < 400 Mb"
+
+- alert: RAMisLow
+  expr: node_memory_MemAvailable < 1000000000
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    description: '{{$labels.instance}} have RAM < 1 Gb'
+```
+
+и перцентиль
+
+```
+- alert: Percentile95
+  expr: histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[1m])) by (le)) > 0.3
+  for: 1m
+  labels:
+    severity: warning
+  annotations:
+    description: '{{ $labels.instance }} of job {{ $labels.job }} have percentile95 a lot of norm more than 1 minute'
+    summary: 'Instance {{ $labels.instance }} have percentile95 a lot of norm more than 1 minute'
+```    
 
 
 ---

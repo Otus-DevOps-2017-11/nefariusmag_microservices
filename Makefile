@@ -1,7 +1,7 @@
 USER_NAME = nefariusmag
 VERSION = latest
 
-.PHONY: build_ui build_comment build_post build_prometheus build_mongodb_exporter build_blackbox_exporter build_all push_ui push_comment push_post push_prometheus push_mongodb_exporter push_blackbox_exporter push_all docker_restart docker_stop docker_start default
+.PHONY: build_ui build_comment build_post build_prometheus build_mongodb_exporter build_blackbox_exporter build_all push_ui push_comment push_post push_prometheus push_mongodb_exporter push_blackbox_exporter push_all restart stop start stop_monitoring start_monitoring default
 
 
 default: docker_restart
@@ -52,16 +52,16 @@ push_alertmanager:
 
 push_all: push_ui push_comment push_post push_prometheus push_mongodb_exporter push_blackbox_exporter
 
-docker_stop:
+stop:
 	cd docker && docker-compose down
 
-docker_start:
+start:
 	cd docker && docker-compose up -d
 
-docker_stop_monitoring:
+stop_monitoring:
 	cd docker && docker-compose -f docker-compose-monitoring.yml down
 
-docker_start_monitoring:
+start_monitoring:
 	cd docker && docker-compose -f docker-compose-monitoring.yml up -d
 
-docker_restart: docker_stop docker_start docker_stop_monitoring docker_start_monitoring
+restart: stop stop_monitoring start start_monitoring

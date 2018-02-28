@@ -11,29 +11,35 @@ groups:
         description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute'
         summary: 'Instance {{ $labels.instance }} down'
 
-    - alert: Percentile95-warning
+    - alert: Percentile95
       expr: histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[1m])) by (le)) > 0.3
       for: 1m
       labels:
         severity: warning
       annotations:
-        description: '{{ $labels.instance }} of job {{ $labels.job }} has high 95 percentile for more than 1 minute'
-        summary: 'Instance {{ $labels.instance }} percentile95 more 0.3'
+        description: '{{ $labels.instance }} of job {{ $labels.job }} have percentile95 a lot of norm more than 1 minute'
+        summary: 'Instance {{ $labels.instance }} have percentile95 a lot of norm more than 1 minute'
 
-    - alert: Percentile95-critical
-      expr: histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[1m])) by (le)) > 0.5
+    - alert: CPUisload
+      expr: node_load1 > 0.5
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        description: "{{$labels.instance}} have cpu load > 0.5"
+
+    - alert: HDDisLow
+      expr: node_filesystem_avail{mountpoint="/"} < 400000000
       for: 1m
       labels:
         severity: critical
       annotations:
-        description: '{{ $labels.instance }} of job {{ $labels.job }} has high 95 percentile for more than 1 minute'
-        summary: 'Instance {{ $labels.instance }} percentile95 more 0.5'
+        description: "{{$labels.instance}} have HDD < 400 Mb"
 
-    - alert: NewPost
-      expr: rate(post_count[1h]) > 0,00025
-      for: 1h
+    - alert: RAMisLow
+      expr: node_memory_MemAvailable < 1000000000
+      for: 1m
       labels:
-        severity: page
+        severity: critical
       annotations:
-        description: 'We have new message(s) in last hour'
-        summary: 'We have new message(s) in last hour'
+        description: '{{$labels.instance}} have RAM < 1 Gb'
