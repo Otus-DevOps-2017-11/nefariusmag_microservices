@@ -19,12 +19,22 @@ services:
     image: ${USER_NAME}/ui:${VERSION_APP}
     ports:
       - ${PORT_UI}:9292/tcp
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
     networks:
       - front_net
 
   post:
     env_file: .env
     image: ${USER_NAME}/post:${VERSION_APP}
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
     networks:
       back_net:
       front_net:
