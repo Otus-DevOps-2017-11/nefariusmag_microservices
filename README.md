@@ -4,14 +4,83 @@ Dmitriy Erokhin - nefariusmag
 Homework 25
 ---
 
-docker-machine create --driver google \
-    --google-project docker-193608 \
-    --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
-    --google-machine-type n1-standard-1 \
-    --google-open-port 5601/tcp \
-    --google-open-port 9292/tcp \
-    --google-open-port 9411/tcp \
-    logging
+Работа с EFK (elasticsearch + fluentd + kibana)
+
+Разворачиваем приложение reddit (обновленный), чиним в нем баги, разворачиваем zipkin (port:9411), fluentd (port:24224), elasticsearch (port:9200), kibana (port:5601) через docker-compose-logging.yml
+
+fluentd собирается предварительно, куда подкидываем fluentd.conf, в котором:
+
+Источник данных:
+```
+<source>
+  @type forward
+  port 24224
+  bind 0.0.0.0
+</source>
+```
+
+Место куда обработанные логи отправляются:
+```
+<match *.**>
+  @type copy
+  <store>
+    @type elasticsearch
+    host elasticsearch
+    port 9200
+    logstash_format true
+    logstash_prefix fluentd
+    logstash_dateformat %Y%m%d
+    include_tag_key true
+    type_name access_log
+    tag_key @log_name
+    flush_interval 1s
+  </store>
+  <store>
+    @type stdout
+  </store>
+</match>
+```
+
+Логи обрабатываем с помощью фильтров:
+```
+<filter service.ui>
+  @type parser
+  key_name log
+  format grok
+  grok_pattern %{RUBY_LOGGER}
+</filter>
+
+<filter service.ui>
+  @type parser
+  format grok
+  grok_pattern service=%{WORD:service} \| event=%{WORD:event} \| request_id=%{GREEDYDATA:request_id} \| message='%{GREEDYDATA:message}'
+  key_name message
+  reserve_data true
+</filter>
+```
+
+Иногда фильтры это просто регулярные выражения, наподобие:
+```
+<filter service.ui>
+  @type parser
+  format /\[(?<time>[^\]]*)\]  (?<level>\S+) (?<user>\S+)[\W]*service=(?<service>\S+)[\W]*event=(?<event>\S+)[\W]*(?:path=(?<path>\S+)[\W]*)?request_id=(?<request_id>\S+)[\W]*(?:remote_addr=(?<remote_addr>\S+)[\W]*)?(?:method= (?<method>\S+)[\W]*)?(?:response_status=(?<response_status>\S+)[\W]*)?(?:message='(?<message>[^\']*)[\W]*)?/
+  key_name log
+</filter>
+```
+
+Задание со *
+
+Чтобы распарсить message типа - `service=ui | event=request | path=/ | request_id=6a37a8cb-c02e-4e79-8bc3-a65ef568f013 | remote_addr=195.26.187.23 | method= GET | response_status=200`, используем фильтр:
+```
+<filter service.ui>
+  @type parser
+  format grok
+  grok_pattern service=%{WORD:service} \| event=%{WORD:event} \| path=%{URIPATH:path} \| request_id=%{UUID:request_id} \| remote_addr=%{IPORHOST:ip_address} \| method=\s%{WORD:method} \| response_status=%{NUMBER:response_status}
+  key_name message
+</filter>
+```
+
+
 
 ---
 Homework 23
