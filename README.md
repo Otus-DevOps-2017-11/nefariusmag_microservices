@@ -1,6 +1,112 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 27
+---
+
+Работа с Docker Swarm
+
+Создаем master и worker'ов
+
+Инициализируем на мастере swarm `docker swarm init`  
+
+Подключаем воркеров:
+`docker swarm join --token SWMTKN-1-5dkxha7z0h9vfxqsoepxqybmehcs7mvfrtml00s8hxnn2nrgepchln12zdzd1805uensy5xouj7 10.132.0.6:2377`
+
+Стек управляется командами:
+`docker stack deploy/rm/services/ls/ps STACK_NAME`
+
+Для деплоя из docker-compose.yml с подтягиванием .env используется команда:
+`docker stack deploy --compose-file=<(docker-compose -f docker-compose.monitoring.yml -f docker-compose.yml config 2>/dev/null) DEV`
+
+Добавления label к ноде:
+`docker node update --label-add reliability=high master-1`
+
+Посмотреть label’ы всех нод:
+`docker node ls -q | xargs docker node inspect  -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'`
+
+Создать ограничения для работы сервисов
+
+- на какой ноде запуститься:
+```
+deploy:
+  placement:
+    constraints:
+      - node.labels.reliability == high
+```
+или
+```
+deploy:
+  placement:
+    constraints:
+      - node.role == worker
+```
+
+- количество запусков:
+```
+deploy:
+  mode: replicated
+  replicas: 7
+```
+или
+```
+deploy:
+  mode: global
+```
+
+- параметры деплоя:
+```
+deploy:
+  update_config:
+    parallelism: 2
+    delay: 5s
+    failure_action: rollback
+    monitor: 5s
+    max_failure_ratio: 2
+    order: start-first
+```
+
+- ограничения по ресурсам:
+```
+deploy:
+  resources:
+    limits:
+    cpus: ‘0.25’
+    memory: 150M   
+```
+
+- ограничения по перезапускам приложения:
+```
+deploy:
+  restart_policy:
+    condition: on-failure
+    max_attempts: 3
+    delay: 3s
+```
+
+При создании нового worker на него заливается по умолчанию только node-exporter, которому мы указали быть на всех серверах.
+
+Задание со *
+
+При увеличении количества реплик приложений после создания нового воркера, они сначала заливаются на него, до выравнивания загруженности.
+
+Управляю окружения за счет подсовывания разных .env
+
+Примеры:
+.env_DEV
+.env_STAGE
+.env_PROD
+
+Команды для старта:
+```
+docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml -f docker-compose.monitoring.yml config 2>/dev/null) DEV
+docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml -f docker-compose.monitoring.yml config 2>/dev/null) STAGE
+docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml -f docker-compose.monitoring.yml config 2>/dev/null) PROD
+```
+
+Неодобно, то что надо париться на счет того не совпадают ли порты постоянно((
+
+---
 Homework 25
 ---
 

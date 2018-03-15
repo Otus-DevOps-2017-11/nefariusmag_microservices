@@ -1,17 +1,34 @@
-version: '3.3'
+version: '3.5'
 services:
 
   prometheus:
     env_file: .env
     image: ${USER_NAME}/prometheus:${VERSION_APP}
     ports:
-      - '9090:9090'
+      - '${PROMETHEUS_PORT}:9090'
     networks:
       - back_net
       - front_net
 
+  # node-exporter:
+  #   image: prom/node-exporter:v0.15.0
+  #   user: root
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - '--path.procfs=/host/proc'
+  #     - '--path.sysfs=/host/sys'
+  #     - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+  #   networks:
+  #     - back_net
+  #     - front_net
+
   node-exporter:
-    image: prom/node-exporter:${VERSION_APP}
+    image: prom/node-exporter:v0.15.0
+    deploy:
+      mode: global
     user: root
     volumes:
       - /proc:/host/proc:ro
@@ -26,24 +43,27 @@ services:
       - front_net
 
   mongodb-exporter:
+    env_file: .env
     image: ${USER_NAME}/mongodb_exporter:${VERSION_APP}
     environment:
       MONGODB_URL: 'mongodb://post_db:27017'
     ports:
-      - 9001:9001
+      - ${MONGODB_EXPORTER_URL}:9001
     networks:
       - back_net
       - front_net
 
   blackbox-exporter:
+    env_file: .env
     image: ${USER_NAME}/blackbox_exporter:${VERSION_APP}
     ports:
-      - 9115:9115
+      - ${BLACKBOX_PORT}:9115
     networks:
       - front_net
       - back_net
 
   cadvisor:
+    env_file: .env
     image: google/cadvisor:v0.29.0
     volumes:
       - '/:/rootfs:ro'
@@ -51,12 +71,13 @@ services:
       - '/sys:/sys:ro'
       - '/var/lib/docker/:/var/lib/docker:ro'
     ports:
-      - '8080:8080'
+      - '${CADVISOR_PORT}:8080'
     networks:
       - back_net
       - front_net
 
   grafana:
+    env_file: .env
     image: grafana/grafana:5.0.0-beta4
     volumes:
       - grafana_data:/var/lib/grafana
@@ -66,20 +87,36 @@ services:
     depends_on:
       - prometheus
     ports:
-      - 3000:3000
+      - ${GRAFANA_PORT}:3000
     networks:
       - back_net
       - front_net
 
   alertmanager:
+    env_file: .env
     image: ${USER_NAME}/alertmanager
     command:
       - '--config.file=/etc/alertmanager/config.yml'
     ports:
-      - 9093:9093
+      - ${ALTERMANAGER_PORT}:9093
     networks:
       - back_net
       - front_net
+
+  zipkin:
+    env_file: .env
+    image: openzipkin/zipkin
+    deploy:
+      mode: global
+    ports:
+      - "${ZIPKIN_PORT}:9411"
+    networks:
+      back_net:
+        aliases:
+          - zipkin        
+      front_net:
+        aliases:
+          - zipkin
 
 volumes:
   grafana_data:
