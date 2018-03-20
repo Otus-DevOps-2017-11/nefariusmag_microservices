@@ -1,6 +1,14 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 28
+---
+
+Развертывание Kubernetes в ручную. GCP + Kubernetes
+
+Используя инструкцию https://github.com/kelseyhightower/kubernetes-the-hard-way шаг за шагом развертываем кубернетис.
+
+---
 Homework 27
 ---
 
