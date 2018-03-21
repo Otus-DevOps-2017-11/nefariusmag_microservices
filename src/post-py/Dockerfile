@@ -1,5 +1,7 @@
 FROM python:3.6.0-alpine
 
+RUN apk add --update gcc musl-dev
+
 WORKDIR /app
 COPY . /app
 

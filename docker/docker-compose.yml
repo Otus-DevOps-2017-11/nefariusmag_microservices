@@ -19,12 +19,22 @@ services:
     image: ${USER_NAME}/ui:${VERSION_APP}
     ports:
       - ${PORT_UI}:9292/tcp
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
     networks:
       - front_net
 
   post:
     env_file: .env
     image: ${USER_NAME}/post:${VERSION_APP}
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
     networks:
       back_net:
       front_net:
@@ -39,48 +49,6 @@ services:
       front_net:
         aliases:
           - comment
-
-  # prometheus:
-  #   env_file: .env
-  #   image: ${USER_NAME}/prometheus:${VERSION_APP}
-  #   ports:
-  #     - '9090:9090'
-  #   networks:
-  #     - back_net
-  #     - front_net
-  #
-  # node-exporter:
-  #   image: prom/node-exporter:${VERSION_APP}
-  #   user: root
-  #   volumes:
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /:/rootfs:ro
-  #   command:
-  #     - '--path.procfs=/host/proc'
-  #     - '--path.sysfs=/host/sys'
-  #     - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
-  #   networks:
-  #     - back_net
-  #     - front_net
-  #
-  # mongodb-exporter:
-  #   image: ${USER_NAME}/mongodb_exporter:${VERSION_APP}
-  #   environment:
-  #     MONGODB_URL: 'mongodb://post_db:27017'
-  #   ports:
-  #     - 9001:9001
-  #   networks:
-  #     - back_net
-  #     - front_net
-  #
-  # blackbox-exporter:
-  #   image: ${USER_NAME}/blackbox_exporter:${VERSION_APP}
-  #   ports:
-  #     - 9115:9115
-  #   networks:
-  #     - front_net
-  #     - back_net
 
 volumes:
   post_db:
