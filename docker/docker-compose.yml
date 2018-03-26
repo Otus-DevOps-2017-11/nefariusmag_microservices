@@ -1,58 +1,130 @@
-version: '3.3'
+version: '3.5'
 services:
 
-  post_db:
+  mongo:
     env_file: .env
-    image: mongo:${VERSION_DB}
+    image: mongo:${MONGO_VERSION}
+    deploy:
+      placement:
+        constraints:
+          - node.labels.reliability == high
     volumes:
-      - post_db:/data/db
-    ports:
-      - 27017:27017
+      - mongo_data:/data/db
     networks:
       back_net:
         aliases:
           - post_db
           - comment_db
 
+  post:
+    env_file: .env
+    image: ${USER_NAME}/post:${POST_VERSION}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 300M
+      mode: replicated
+      replicas: 2
+      update_config:
+        delay: 10s
+        parallelism: 2
+        failure_action: rollback
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        max_attempts: 14
+        delay: 1s
+    environment:
+      - ZIPKIN_PORT=${ZIPKIN_PORT}
+    networks:
+      - front_net
+      - back_net
+
+  comment:
+    image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 300M
+      mode: replicated
+      replicas: 7
+      update_config:
+        delay: 10s
+        parallelism: 2
+        failure_action: rollback
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        max_attempts: 11
+        delay: 1s
+    networks:
+      - front_net
+      - back_net
+
   ui:
     env_file: .env
-    image: ${USER_NAME}/ui:${VERSION_APP}
+    image: ${USER_NAME}/ui:${UI_VERSION}
+    environment:
+      - ENV=${ENV}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 150M
+      mode: replicated
+      replicas: 3
+      update_config:
+        delay: 5s
+        parallelism: 1
+        failure_action: rollback
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 3s
     ports:
-      - ${PORT_UI}:9292/tcp
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: service.ui
+      - "${UI_PORT}:9292/tcp"
     networks:
       - front_net
 
-  post:
-    env_file: .env
-    image: ${USER_NAME}/post:${VERSION_APP}
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: service.post
-    networks:
-      back_net:
-      front_net:
-        aliases:
-          - post
-
-  comment:
-    env_file: .env
-    image: ${USER_NAME}/comment:${VERSION_APP}
-    networks:
-      back_net:
-      front_net:
-        aliases:
-          - comment
+  # zipkin:
+  #   image: openzipkin/zipkin
+  #   ports:
+  #     - "9411:9411"
+  #   networks:
+  #     back_net:
+  #     front_net:
+  #       aliases:
+  #         - zipkin
+  #
+  # node-exporter:
+  #   image: prom/node-exporter:v0.15.0
+  #   deploy:
+  #     mode: global
+  #   user: root
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - '--path.procfs=/host/proc'
+  #     - '--path.sysfs=/host/sys'
+  #     - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+  #   networks:
+  #     - back_net
+  #     - front_net
 
 volumes:
-  post_db:
+  mongo_data: {}
 
 networks:
-  back_net:
-  front_net:
+  back_net: {}
+  front_net: {}
