@@ -2,18 +2,48 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: post-deployment
+  name: post
+  labels:
+    app: reddit
+    component: post
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
-      app: post
+      app: reddit
+      component: post
   template:
     metadata:
       name: post
       labels:
-        app: post
+        app: reddit
+        component: post
     spec:
       containers:
       - image: nefariusmag/post
         name: post
+        env:
+        - name: POST_DATABASE_HOST
+          value: post-db
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: post
+  labels:
+    app: reddit
+    component: post
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+    name: post-1
+  - port: 4567
+    protocol: TCP
+    targetPort: 4567
+    name: post-2   
+  selector:
+    app: reddit
+    component: post

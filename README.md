@@ -1,6 +1,96 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 29
+---
+
+Kubernetes локально в minikube и глобально в GKE
+
+Для развертывания Kubernetes локально используем virtualbox + minikube. Для работы с кластером Kubernetes используем Kubectl.
+
+Установка:
+
+Kubectl:
+https://kubernetes.io/docs/tasks/tools/install-kubectl/
+
+Virtualbox:
+https://www.virtualbox.org/wiki/Downloads
+
+Minikube:
+`curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.24.1/minikube-linuxamd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/`
+
+Запуск кластера:
+`minikube start`
+
+Проверка работы кластера:
+`kubectl get nodes`
+
+Манифет для подключения kubectl к кластеру Kubernetes
+~/.kube/config
+
+Конфигурация kubectl в ручную:
+Создать cluster:
+$ kubectl config set-cluster … cluster_name
+Создать данные пользователя (credentials)
+$ kubectl config set-credentials … user_name
+Создать контекст
+$ kubectl config set-context context_name --cluster=cluster_name --user=user_name
+Использовать контекст
+$ kubectl config use-context context_name
+
+Список всех контекстов:
+`kubectl config get-contexts`
+
+Проверка текущего контекста:
+`kubectl config current-context`
+
+Окружение настраивается через namespace:
+```
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+```
+
+Для деплоя приложений используются команда:
+`kubectl apply  -n dev -f ххх.yml`
+
+Проброс портов для тестирования приложения:
+`kubectl port-forward <pod-name> 8080:9292`
+
+Описание подов или сервисов:
+`kubectl describe service\pods post\post-6cd8566f6-985fl`
+
+Подключение к подам:
+`kubectl exec -ti <pod-name> /bin/sh`
+
+Удаление сервиса:
+`kubectl delete service mongodb`
+
+Minikube:
+
+Отображение веб-страниц с внешними сервисами:
+`minikube service ui -n dev`
+
+Список всех сервисов:
+`minikube services list`
+
+Список расширений:
+`minikube addons list`
+
+Включим addon:
+`minikube addons enable dashboard`
+
+Дашборд для управления кластером:
+`minikube service kubernetes-dashboard -n kube-system`
+
+GKP настаивался графически.
+
+Задание со *
+
+
+
+---
 Homework 28
 ---
 
@@ -194,8 +284,6 @@ fluentd собирается предварительно, куда подкид
 </filter>
 ```
 
-
-
 ---
 Homework 23
 ---
@@ -361,7 +449,6 @@ receivers:
     description: '{{ $labels.instance }} of job {{ $labels.job }} have percentile95 a lot of norm more than 1 minute'
     summary: 'Instance {{ $labels.instance }} have percentile95 a lot of norm more than 1 minute'
 ```    
-
 
 ---
 Homework 21
@@ -603,6 +690,7 @@ deploy_job:
   script:
     - echo 'Deploy'
 ```
+
 Для запуска runner поднял еще контейнер:
 ```
 docker run -d --name gitlab-runner --restart always \
