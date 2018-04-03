@@ -1,50 +1,38 @@
+---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: ui
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
   labels:
     app: reddit
     component: ui
+    release: {{ .Release.Name }}
 spec:
   replicas: 3
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: reddit
       component: ui
+      release: {{ .Release.Name }}
   template:
     metadata:
       name: ui-pod
       labels:
         app: reddit
         component: ui
+        release: {{ .Release.Name }}
     spec:
       containers:
       - image: nefariusmag/ui
         name: ui
+        ports:
+        - containerPort: 9292
+          name: ui
+          protocol: TCP
         env:
-        - name: POST_SERVICE_HOST
-          value: post
-        - name: COMMENT_SERVICE_HOST
-          value: comment
         - name: ENV
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ui
-  labels:
-    app: reddit
-    component: ui
-spec:
-  type: NodePort
-  ports:
-  - nodePort: 32092
-    port: 9292
-    protocol: TCP
-    targetPort: 9292
-  selector:
-    app: reddit
-    component: ui
