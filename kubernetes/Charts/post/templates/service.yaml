@@ -5,15 +5,15 @@ metadata:
   name: {{ .Release.Name }}-{{ .Chart.Name }}
   labels:
     app: reddit
-    component: ui
+    component: post
     release: {{ .Release.Name }}
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: {{ .Values.service.externalPort }}
     protocol: TCP
     targetPort: {{ .Values.service.internalPort }}
   selector:
     app: reddit
-    component: ui
+    component: post
     release: {{ .Release.Name }}

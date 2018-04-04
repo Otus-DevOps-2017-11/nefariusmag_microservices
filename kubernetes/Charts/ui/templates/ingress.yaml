@@ -9,7 +9,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /*
+      - path: /
         backend:
           serviceName: {{ .Release.Name }}-{{ .Chart.Name }}
-          servicePort: 9292
+          servicePort: {{ .Values.service.externalPort }}
