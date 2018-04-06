@@ -9,3 +9,8 @@ monitoring/blackbox_exporter/blackbox_exporter
 
 create_vm/credentials\.json
 create_vm/secrets\.py
+
+*.tfvars
+*.tfstate.backup
+*.terraform
+*.tfstate
