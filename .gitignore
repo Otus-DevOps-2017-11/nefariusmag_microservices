@@ -14,3 +14,6 @@ create_vm/secrets\.py
 *.tfstate.backup
 *.terraform
 *.tfstate
+*.info
+
+Gitlab_ci/
