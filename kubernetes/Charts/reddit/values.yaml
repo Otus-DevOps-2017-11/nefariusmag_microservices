@@ -1,0 +1,20 @@
+comment:
+  image:
+    repository: nefariusmag/comment
+    tag: latest
+  service:
+    externalPort: 9292
+
+post:
+  image:
+    repository: nefariusmag/post
+    tag: latest
+    service:
+      externalPort: 5000
+
+ui:
+  image:
+    repository: nefariusmag/ui
+    tag: latest
+    service:
+      externalPort: 9292
