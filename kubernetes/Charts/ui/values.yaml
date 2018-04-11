@@ -1,0 +1,13 @@
+---
+service:
+  internalPort: 9292
+  externalPort: 80
+
+image:
+  repository: nefariusmag/ui
+  tag: latest
+
+postHost:
+postPort:
+commentHost:
+commentPort:

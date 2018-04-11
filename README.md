@@ -1,6 +1,95 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 31
+---
+
+Работа с Helm
+
+Работает как система клиент - сервер. На кластер ставится Tiller.
+
+```
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: kube-system
+```
+
+`kubectl apply -f tiller.yml`
+`helm init --service-account tiller`
+
+Для работы необходим Chart.yaml, где праписывается версия, приложение, владелец:
+```
+---
+name: ui
+version: 1.0.0
+description: OTUS reddit application UI
+maintainers:
+  - name: Dmitry Erokhin
+    email: i9164871362@gmail.com
+appVersion: 1.0
+```
+
+Для установки приложения используется команда:
+`helm install --name test-ui-1 ui/`
+
+Для параметризации имени релиза и версии используем:
+`{{ .Release.Name }}-{{ .Chart.Name }}`
+
+Остальные вещи для параметризации:
+```
+{{ .Values.image.repository }}
+{{ .Values.image.tag }}
+{{ .Values.service.internalPort }}
+{{ .Values.service.externalPort }}
+```
+
+Для функции задающей переменные:
+```
+{{- define "comment.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name }}
+{{- end -}}
+```
+
+Образение к этой функции выглядит следующим образом:
+`{{ template "comment.fullname" . }}`
+
+Для создания ссылок на другие элементы используем requirements.yaml
+```
+---
+dependencies:
+ - name: ui
+ version: "1.0.0"
+ repository: "file://../ui"
+ - name: post
+ version: "1.0.0"
+ repository: file://../post
+ - name: comment
+ version: “1.0.0"
+ repository: file://../comment
+```
+
+Для подгрухки зависимостей:
+`helm dep update `
+
+
+
+---
 Homework 30
 ---
 
