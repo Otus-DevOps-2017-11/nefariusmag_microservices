@@ -1,6 +1,63 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 32
+---
+
+Настройка мониторинга и логирования для k8s
+
+Мониторинг:
+
+Для работы нам необходим ingress-контроллер nginx:
+`helm install stable/nginx-ingress --name nginx`
+
+Получить ip nginx можно:
+`kubectl get svc`
+
+Prometheus устанавливается замысловато:
+```
+git clone https://github.com/kubernetes/charts.git kube-charts
+cd kube-charts
+git fetch origin pull/2767/head:prom_2.0
+git checkout prom_2.0
+```
+
+Для запуска prometheus из нашего конфига:
+`helm upgrade prom . -f custom_values.yml --install`
+
+Для работы helm используются команды:
+```
+helm upgrade <release> --namespace <namespace> ./<folder> --install
+```
+
+Для установки Grafana выполняем:
+`helm upgrade --install grafana stable/grafana --set "server.adminPassword=admin" --set "server.service.type=NodePort" --set "server.ingress.enabled=true" --set "server.ingress.hosts={reddit-grafana}"`
+
+Добавляем дашборды для работы с кубернетисом:
+https://grafana.com/dashboards/315
+https://grafana.com/dashboards/741
+
+Настраиваем источники БД и параметризируем окружения через variable дашбордов.
+В каждый дашборд встраиваем настройку зависимомсти от окружения.
+
+
+Логирование
+
+Логировать будем через EFK (ElasticSearch, Fluentd, Kibana)
+
+Чтобы еластик запустился на самой обьемной ноде, помечаем её:
+`kubectl label node gke-cluster-1-big-pool-b4209075-tvn3 elastichost=true`
+
+Kibana ставим через helm:
+`helm upgrade --install kibana stable/kibana --set "ingress.enabled=true" --set "ingress.hosts={reddit-kibana}" --set "env.ELASTICSEARCH_URL=http://elasticsearch-logging:9200" --version 0.1.1`
+
+Для настройки ElasticSearch и Fluentd используем yaml.
+
+Задание со *
+
+Насписал Chart для EFK
+
+---
 Homework 31
 ---
 
@@ -85,7 +142,7 @@ dependencies:
 ```
 
 Для подгрухки зависимостей:
-`helm dep update `
+`helm dep update`
 
 
 
