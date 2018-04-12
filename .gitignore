@@ -15,3 +15,6 @@ create_vm/secrets\.py
 *.terraform
 *.tfstate
 *.info
+*.key
+*.crt
+*.pem
