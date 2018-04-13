@@ -1,6 +1,204 @@
 Dmitriy Erokhin - nefariusmag
 
 ---
+Homework 30
+---
+
+Работа с Network & PersistentVolume
+
+
+За dns отвечат сервис  kube-dns-autoscaler и kube-dns, без них поды не будут распозновать друг друга по dns-именам.
+
+Для создания внешнего балансировщика (в GCP) используется LoadBalancer, конфигурируется он для сервиса в следующих настройках:
+
+```
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    nodePort: 32092
+    protocol: TCP
+    targetPort: 9292
+  selector:
+    app: reddit
+    component: ui
+```
+
+Увидеть LoadBalancer можно командой:
+`kubectl get service -n dev --selector component=ui `
+
+Еще один балансировщик Ingress с большим количеством возможностей, задается он через:
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ui
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  tls:
+  - secretName: ui-ingress
+  backend:
+    serviceName: ui
+    servicePort: 9292
+```
+
+IP адрес можно увидеть через команду:
+`kubectl get ingress -n dev`
+
+Для генерации сертификата используем:
+`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=35.190.66.90" `
+
+Загрузить сертификат в кластер:
+`kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev`
+
+Проверить наличие сертификата:
+`kubectl describe secret ui-ingress -n dev`
+
+Настройка Ingress для работы только по https:
+```
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ui
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  tls:
+  - secretName: ui-ingress
+  backend:
+    serviceName: ui
+    servicePort: 9292
+```
+
+Удаление ingress выполняется через команду:
+`kubectl delete ingress ui -n dev`
+
+___
+
+Для настройки NetworkPolicy необходимо включить этот плагин:
+```
+gcloud beta container clusters list
+gcloud beta container clusters update <cluster-name> --zone=us-central1-a --update-addons=NetworkPolicy=ENABLED
+gcloud beta container clusters update <cluster-name> --zone=us-central1-a --enable-network-policy
+```
+
+В yaml это описывается следующим образом:
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-db-traffic
+  labels:
+    app: reddit
+spec:  # объекты
+  podSelector:
+    matchLabels:
+      app: reddit
+      component: mongo
+  policyTypes: # запреты
+  - Ingress
+  ingress: # разрешающие правила
+  - from:
+    - podSelector:
+        matchLabels:
+          app: reddit
+          component: comment
+```
+
+
+___
+
+Хранилища для БД описываются в yml:
+```
+---
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mongo
+...
+    spec:
+      containers:
+      - image: mongo:3.2
+        name: mongo
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-persistent-storage
+        emptyDir: {}
+```
+
+Для централизованного гугловского хранилища необходимо его создать и настроить поды работать с ним
+
+Хранилище в GCP создается командой:
+`gcloud compute disks create --size=25GB --zone=us-central1-a reddit-mongo-disk`
+
+Настройка подов для работы с хранилищем:
+```
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mongo
+...
+    spec:
+      containers:
+      - image: mongo:3.2
+        name: mongo
+        volumeMounts:
+        - name: mongo-gce-pd-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-persistent-storage
+        emptyDir: {}
+        volumes:
+      - name: mongo-gce-pd-storage
+        gcePersistentDisk:
+          pdName: reddit-mongo-disk
+          fsType: ext4
+```
+
+Для удаления задеплоиного mongo используем:
+`kubectl delete deploy mongo -n dev`
+
+
+Для настройки PersistentVolume для ограничения места настройка выглядит следующим образом:
+```
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: reddit-mongo-disk
+spec:
+  capacity:
+    storage: 25Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  gcePersistentDisk:
+    fsType: "ext4"
+    pdName: "reddit-mongo-disk"
+```
+
+Для настройки PersistentVolumeClaim нужно сконфигурировать yml:
+
+```
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 25Gi
+```
+
+---
 Homework 29
 ---
 
