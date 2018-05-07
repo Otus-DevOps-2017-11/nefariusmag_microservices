@@ -1,0 +1,8 @@
+---
+name: elastic
+version: 1.0.0
+description: OTUS reddit application ELASTIC
+maintainers:
+  - name: Dmitry Erokhin
+    email: i9164871362@gmail.com
+appVersion: 1.0
