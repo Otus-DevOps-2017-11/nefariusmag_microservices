@@ -15,5 +15,8 @@ create_vm/secrets\.py
 *.terraform
 *.tfstate
 *.info
+*.key
+*.crt
+*.pem
 
 Gitlab_ci/
