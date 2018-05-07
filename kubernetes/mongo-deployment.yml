@@ -30,9 +30,13 @@ spec:
         - name: mongo-gce-pd-storage
           mountPath: /data/db
       volumes:
+      - name: mongo-persistent-storage
+        emptyDir: {}
+        volumes:
       - name: mongo-gce-pd-storage
-        persistentVolumeClaim:
-          claimName: mongo-pvc-dynamic
+        gcePersistentDisk:
+          pdName: reddit-mongo-disk
+          fsType: ext4
 
 ---
 apiVersion: v1

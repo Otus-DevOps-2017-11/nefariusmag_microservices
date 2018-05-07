@@ -18,3 +18,5 @@ create_vm/secrets\.py
 *.key
 *.crt
 *.pem
+
+Gitlab_ci/
